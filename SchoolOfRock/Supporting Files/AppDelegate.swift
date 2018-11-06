@@ -21,8 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
         if let scheme = url.scheme {
             if scheme == "sor" {
-                let code = url.absoluteString;
-                let model = SORModel(); model.generateAuthToken(item: code);
+                SORModel.sharedInstance.generateAuthToken(item: url.absoluteString);
             }
         }
         

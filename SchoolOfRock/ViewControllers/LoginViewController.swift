@@ -7,15 +7,19 @@
 //
 
 import UIKit
+import RxSwift
 
 class LoginViewController: UIViewController {
-    
-    private let model = SORModel();
+
+    private let bag = DisposeBag()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        SORModel.sharedInstance.token$.asObservable().subscribe(onNext: { (token) in
+            if let _ = token {
+                self.performSegue(withIdentifier: "toAlbumListViewController", sender: self);
+            }
+        }).disposed(by: bag);
     }
 
     override func didReceiveMemoryWarning() {
@@ -25,9 +29,8 @@ class LoginViewController: UIViewController {
     
     
     @IBAction func tapLogin(_ sender: Any) {
-        if let link = URL(string: self.model.getAuthenticateUrl()) {
+        if let link = URL(string: SORModel.sharedInstance.getAuthenticateUrl()) {
             UIApplication.shared.open(link)
         }
     }
-
 }
