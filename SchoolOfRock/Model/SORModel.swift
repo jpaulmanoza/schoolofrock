@@ -61,26 +61,29 @@ class SORModel {
         }
     }
     
-    func getAlbums(qTerm: String = "School Of Rock") {
+    func getAlbums(qTerm: String = "School Of Rock", page: Int = 0) {
         // url encode query
         let query = qTerm.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!;
 
         let endpoint = "https://api.spotify.com/v1/search?type=album&q=" + query + "&limit=5";
         let header: HTTPHeaders = self.requestHeader();
         
-        print("using endpoint", endpoint, query);
-        
         Alamofire.request(endpoint, headers: header).responseJSON { response in
             if let data = response.result.value {
                 let json = JSON(data);
-                // TODO: Addd Mapper to catch album -> items (e.g. SORAlbumGroup)
-                let albumItems = String(describing: json["albums"]["items"]);
-                guard let albums = Mapper<SORAlbum>().mapArray(JSONString: albumItems) else {
+                // TODO: Addd Mapper to catch album -> items (e.g. SORAlbumPage)
+                let albumItems = String(describing: json["albums"]);
+                guard let albumPages = Mapper<SORAlbumPage>().mapArray(JSONString: albumItems) else {
                     return
                 }
                 
+                var albums: [SORAlbum] = [];
+                for page in albumPages {
+                    for album in page.pageItems { albums.append(album) }
+                }
+                
                 // notify change
-                self.albums$.value = albums;
+                self.albums$.value.append(contentsOf: albums);
             }
         }
     }
@@ -95,17 +98,5 @@ class SORModel {
             header["Authorization"] = "Bearer " + token;
         }
         return header;
-    }
-}
-
-extension String {
-    func htmlEscaped() -> String {
-        var finalString = ""
-        for char in self {
-            for scalar in String(char).unicodeScalars {
-                finalString.append("&#\(scalar.value)")
-            }
-        }
-        return finalString
     }
 }

@@ -14,13 +14,13 @@ class AlbumListViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
     
+    private let model = SORModel();
     private let bag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        SORModel.sharedInstance.getAlbums()
-        SORModel.sharedInstance.albums$.asObservable().subscribe(onNext: { albums in
+        self.model.getAlbums()
+        self.model.albums$.asObservable().subscribe(onNext: { albums in
             self.tableView.reloadData()
         }).disposed(by: bag);
 
@@ -39,12 +39,12 @@ extension AlbumListViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return SORModel.sharedInstance.albums$.value.count;
+        return self.model.albums$.value.count;
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: AlbumTableViewCell.cellIdentifier, for: indexPath) as! AlbumTableViewCell
-        let album = SORModel.sharedInstance.albums$.value[indexPath.row];
+        let album = self.model.albums$.value[indexPath.row];
         cell.textLabel?.text = album.albumName; cell.detailTextLabel?.text = album.albumRelease;
         return cell;
     }
